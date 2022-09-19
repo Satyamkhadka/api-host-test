@@ -1,0 +1,112 @@
+void starshipgame::createplanet(name player, uint64_t planetid, uint32_t planet_template) {
+    name authorized_minter = get_self();
+    name collection_name = starship::STARSHIP_COLLECTION;
+    name schema_name = starship::PLANET_SCHEMA;
+    name new_asset_owner = player;
+    std::string planetname =
+        std::to_string(COORD_SPACESTATION(planetid)) + "-" +
+        std::to_string(COORD_QUADRANT(planetid)) + "-" +
+        std::to_string(COORD_SECTOR(planetid)) + "-" +
+        std::to_string(COORD_SYSTEM(planetid)) + "-" +
+        std::to_string(COORD_ORBIT(planetid));
+
+    atomicassets::ATTRIBUTE_MAP immutable_data = {
+        {"planet_id", planetid}
+    };
+    atomicassets::ATTRIBUTE_MAP mutable_data = {
+        {"planet_name", planetname}
+    };
+
+    vector<asset> tokens_to_back;
+
+    // call the atomicassets mint action
+    action(
+        permission_level{authorized_minter, "active"_n},
+        atomicassets::ATOMICASSETS_ACCOUNT,
+        "mintasset"_n,
+        std::tuple(
+            authorized_minter,
+            collection_name,
+            schema_name,
+            planet_template,
+            new_asset_owner,
+            immutable_data,
+            mutable_data,
+            tokens_to_back
+        )
+    ).send();
+}
+
+// to make an authenticated (with active permission) call to smartcontract 
+
+const { Api, JsonRpc } = require('eosjs');
+const { JsSignatureProvider } = require('eosjs/dist/eosjs-jssig');  // development only
+const fetch = (url, body) => import('node-fetch').then(({ default: fetch }) => fetch(url, body));
+const { TextDecoder, TextEncoder } = require('util'); //node only
+
+const privateKeys = "5JY5tivaRm3JsgHeCzQtadGhP3j2jEc9jgxoRGpEnTyH2gYdyfM"; //private active key of blockchain22
+
+const signatureProvider = new JsSignatureProvider([privateKeys]);
+const rpc = new JsonRpc('https://testnet.wax.eosdetroit.io', { fetch }); //required to read blockchain state
+const api = new Api({ rpc, signatureProvider, textDecoder: new TextDecoder(), textEncoder: new TextEncoder() }); //required to submit transactions
+
+reward.createReward = async (req, res) => {
+    try {
+        console.log(signatureProvider)
+        const transaction = await api.transact({
+            actions: [{
+                account: 'eosio.token',
+                name: 'transfer',
+                authorization: [{
+                    actor: 'blockchain22',
+                    permission: 'active',
+                }],
+                data: {
+                    from: 'blockchain22',
+                    to: 'blockchain11',
+                    quantity: '0.50000000 WAX',
+                    memo: '1%blockchain22'
+                }
+            }]
+        }, {
+            blocksBehind: 3,
+            expireSeconds: 30,
+        });
+        res.json(transaction);
+    }
+    catch (e) {
+        console.log(e)
+        res.status(401).json({
+            success: false,
+            message: "error while transaction",
+            exception: e
+        });
+    }
+};
+
+
+
+
+https://wax.api.atomicassets.io/atomicassets/v1/assets/?owner='
++
+ 
+waxUserAccount
+ 
++
+ 
+'&collection_name=collection_name_here&schema_name=schema_name_here
+ like 1
+
+
+
+
+
+
+swagger api docs link 
+
+https://test.wax.api.atomicassets.io/docs/
+
+// "chainAddressRewardRpc": "https://wax.eosdetroit.io",
+// "explorerApiAddress": "https://wax.api.atomicassets.io",
+// "explorerApiSmartContract": "atomicassets",
+// "scanWalletApi": "https://wax.api.atomicassets.io/atomicassets/v1/assets"
